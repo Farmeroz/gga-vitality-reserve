@@ -1,0 +1,22 @@
+{
+  "name": "gga-vitality-reserve",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "test:upstream": "node --test tests/upstream.mjs",
+    "test:setup": "node tools/test-sources.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "build": "node tools/build.mjs",
+    "check": "npm run format:check && npm test && npm run test:upstream && npm run build"
+  },
+  "devDependencies": {
+    "prettier": "3.9.6",
+    "fflate": "0.8.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
