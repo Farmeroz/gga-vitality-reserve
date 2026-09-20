@@ -19,13 +19,13 @@ export function activeGM() {
 export function assertEnabled() {
   if (!setting('enabled')) throw new Error('Vitality Reserve is disabled.');
 }
-export function renderResult(actor, result, label = '') {
+export function renderResult(actor, result, label = '', audit = '') {
   if (result.kind === 'setup')
     return `<p><strong>${esc(actor.name)}:</strong> Vitality Reserve tracker configured.</p>`;
   if (result.kind === 'unlink')
     return `<p><strong>${esc(actor.name)}:</strong> VR automation unlinked; tracker values retained.</p>`;
   const delta = (n) => `${n >= 0 ? '+' : '−'}${Math.abs(n)}`;
-  return `<div class="gvr-result"><strong>${esc(actor.name)} · ${esc(label || { damage: 'Injury', heal: 'Healing', recover: 'VR recovery', spend: 'VR expenditure' }[result.kind])}</strong><p>${result.amount} points: HP ${delta(result.hpChange)}, VR ${delta(result.vrChange)}.</p><p>HP ${result.before.hp} → ${result.after.hp}; VR ${result.before.vr} → ${result.after.vr}.${result.unused ? ` Unused: ${result.unused}.` : ''}</p></div>`;
+  return `<div class="gvr-result"><strong>${esc(actor.name)} · ${esc(label || { damage: 'Injury', heal: 'Healing', recover: 'VR recovery', spend: 'VR expenditure' }[result.kind])}</strong><p>${result.amount} points: HP ${delta(result.hpChange)}, VR ${delta(result.vrChange)}.</p><p>HP ${result.before.hp} → ${result.after.hp}; VR ${result.before.vr} → ${result.after.vr}.${result.unused ? ` Unused: ${result.unused}.` : ''}</p>${audit ? `<details><summary>Damage calculation and armour review</summary><pre style="white-space:pre-wrap">${esc(String(audit).slice(0, 20000))}</pre></details>` : ''}</div>`;
 }
 export async function perform(actor, request, user) {
   own(actor, user);
@@ -98,7 +98,7 @@ async function processRequest(message) {
     actor = await fromUuid(request.actorUuid);
     const result = await perform(actor, request, user);
     receipt = { ok: true, result };
-    content = renderResult(actor, result, request.label);
+    content = renderResult(actor, result, request.label, request.audit);
   } catch (error) {
     receipt = { ok: false, error: error.message };
     content = `<p>Vitality Reserve: ${esc(error.message)}</p>`;
@@ -135,7 +135,7 @@ export async function request(actor, operation) {
     try {
       await ChatMessage.create({
         speaker: ChatMessage.getSpeaker({ actor }),
-        content: renderResult(actor, result, payload.label),
+        content: renderResult(actor, result, payload.label, payload.audit),
         whisper: payload.publicly
           ? []
           : [game.user.id, ...game.users.filter((u) => u.isGM).map((u) => u.id)],

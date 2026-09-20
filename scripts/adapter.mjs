@@ -22,6 +22,7 @@ export async function resolve(wrapped, keepOpen, injury, publicly, results = nul
     amount: injury,
     bypass: !!this._gvrBypass,
     publicly,
+    audit: calculationText(results),
     label: `Injury (${this._calculator.hitLocation || 'unspecified location'})`,
   });
   // Preserve GGA's last-injury bookkeeping for macros. The split is explicit.
@@ -87,4 +88,16 @@ export function installAdapter() {
       }
     }
   });
+}
+
+export function calculationText(html) {
+  if (!html) return '';
+  const holder = document.createElement('div');
+  holder.innerHTML = html;
+  for (const element of holder.querySelectorAll('script,style,button')) element.remove();
+  for (const element of holder.querySelectorAll('p,tr,li,div'))
+    element.append(document.createTextNode('\n'));
+  for (const element of holder.querySelectorAll('td,th'))
+    element.append(document.createTextNode(' | '));
+  return holder.textContent.trim().slice(0, 20000);
 }

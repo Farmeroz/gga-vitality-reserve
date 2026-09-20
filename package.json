@@ -1,6 +1,6 @@
 {
   "name": "gga-vitality-reserve",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,8 +13,9 @@
     "check": "npm run format:check && npm test && npm run test:upstream && npm run build"
   },
   "devDependencies": {
-    "prettier": "3.9.6",
-    "fflate": "0.8.2"
+    "fflate": "0.8.2",
+    "linkedom": "^0.18.12",
+    "prettier": "3.9.6"
   },
   "engines": {
     "node": ">=22"

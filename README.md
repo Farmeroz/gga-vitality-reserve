@@ -58,3 +58,7 @@ Tests execute the real GGA 0.18.23 damage-calculator class bodies, pinned to com
 `npm run build` produces a clean installable ZIP and manifest in `dist/`. The release workflow checks the build before publishing a version on `main`. Do not include upstream GGA source or the Pyramid PDF in release files.
 
 GURPS is a trademark of Steve Jackson Games. This unofficial software does not reproduce the source article. Code is MIT licensed.
+
+## Version 0.1.1
+
+Registers `/vr` with GGA’s command processor, including Foundry v14 formatted chat input and OtF commands. When using Layered Armour, install version 0.2.3 or later as well; that update moves its ADD methods to libWrapper and keeps armour review ahead of VR routing in either load order. Armour calculation details are retained in the VR chat result.

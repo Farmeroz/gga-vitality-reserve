@@ -174,3 +174,181 @@ test('installing twice is harmless', () => {
   installEffects(parent, () => ({ vr: 0 }));
   assert.equal(c.calculatedShock, 0);
 });
+
+// Exercise the patched Layered Armour source alongside the real GGA calculator.
+const armour = await import('./upstream-source/layered-core.mjs');
+const armourSource = await readFile(
+  new URL('./upstream-source/layered-integration.mjs', import.meta.url),
+  'utf8',
+);
+const { parseHTML } = await import('linkedom');
+const { resolve: vrResolve, prepare: vrPrepare } = await import('../scripts/adapter.mjs');
+function combined(order, { invalid = false } = {}) {
+  const { document } = parseHTML('<html><body></body></html>');
+  globalThis.document = document;
+  const messages = [];
+  globalThis.game = {
+    user: { id: 'gm', isGM: true },
+    users: [],
+    settings: {
+      get: (_scope, key) => ({ enabled: true, healingPolicy: 'hp', cripplingPolicy: 'hp' })[key],
+    },
+    i18n: { localize: (s) => s },
+  };
+  globalThis.ui = { notifications: { error() {}, warn() {} } };
+  globalThis.foundry = { utils: { randomID: () => 'result' } };
+  globalThis.GURPS = { lastInjuryRolls: {} };
+  globalThis.ChatMessage = { getSpeaker: () => ({}), create: async (data) => messages.push(data) };
+  const actor = {
+    id: 'a',
+    uuid: 'Actor.a',
+    documentName: 'Actor',
+    name: 'Test',
+    isOwner: true,
+    system: {
+      HP: { value: 12, max: 12 },
+      additionalresources: { tracker: { '0000': { value: 3, max: 3, gvr: { kind: 'vitality' } } } },
+    },
+    testUserPermission: () => true,
+    getFlag: () => ({
+      schema: 1,
+      enabled: true,
+      layers: [
+        { ...armour.newLayer(['Torso']), dr: 4 },
+        { ...armour.newLayer(['Torso']), dr: 2 },
+      ],
+    }),
+    async update(changes) {
+      for (const [path, value] of Object.entries(changes)) {
+        let obj = this;
+        const parts = path.split('.');
+        for (const p of parts.slice(0, -1)) obj = obj[p];
+        obj[parts.at(-1)] = value;
+      }
+    },
+  };
+  const { parent } = make([12], 3, {
+    _defender: actor,
+    armorDivisor: 1,
+    useArmorDivisor: true,
+    viewId: 0,
+    hitLocation: invalid ? 'Random' : 'Torso',
+  });
+  for (const [key, get] of Object.entries({
+    DR: () => 0,
+    effectiveDR: function () {
+      return this.DR;
+    },
+    isFlexibleArmor: () => false,
+  }))
+    Object.defineProperty(parent, key, { configurable: true, get });
+  Object.defineProperty(
+    parent,
+    'pointsToApply',
+    Object.getOwnPropertyDescriptor(CompositeDamageCalculator.prototype, 'pointsToApply'),
+  );
+  let nativeWrites = 0;
+  class ADD {
+    constructor() {
+      this.actor = actor;
+      this._calculator = parent;
+      this.options = {};
+      this.position = {};
+    }
+    async getData() {
+      return {};
+    }
+    activateListeners() {}
+    async resolveInjury() {
+      nativeWrites++;
+    }
+    _renderTemplate() {}
+    render() {}
+    async close() {}
+  }
+  const chains = new Map();
+  // libWrapper's documented priority: WRAPPER always precedes MIXED, independent
+  // of registration order. Exercise the real module wrapper functions here.
+  const wrapper = {
+    register(_id, path, fn, type) {
+      const method = path.split('.').at(-1);
+      let chain = chains.get(method);
+      if (!chain) {
+        chain = { native: ADD.prototype[method], items: [] };
+        chains.set(method, chain);
+      }
+      chain.items.push({ fn, type });
+      ADD.prototype[method] = function (...args) {
+        const ordered = [...chain.items].sort(
+          (a, b) => (a.type === 'WRAPPER' ? 0 : 1) - (b.type === 'WRAPPER' ? 0 : 1),
+        );
+        const call = (i, a) =>
+          i === ordered.length
+            ? chain.native.apply(this, a)
+            : ordered[i].fn.call(this, (...next) => call(i + 1, next), ...a);
+        return call(0, args);
+      };
+    },
+  };
+  const env = vm.createContext({
+    ...armour,
+    esc: armour.escapeHTML,
+    document,
+    game,
+    ui,
+    libWrapper: wrapper,
+    attachHelp: () => () => {},
+    helpEnabled: () => false,
+  });
+  const patch = vm.runInContext(
+    armourSource
+      .replace(/^import [\s\S]*? from ['"][^'"]+['"];?\s*$/gm, '')
+      .replace(/export function/g, 'function') + '\npatchADD',
+    env,
+  );
+  const installVR = () => {
+    wrapper.register(
+      'vr',
+      'GURPS.ApplyDamageDialog.prototype.getData',
+      async function (w, ...a) {
+        vrPrepare(this);
+        return w(...a);
+      },
+      'WRAPPER',
+    );
+    wrapper.register('vr', 'GURPS.ApplyDamageDialog.prototype.resolveInjury', vrResolve, 'MIXED');
+  };
+  if (order === 'VR first') {
+    installVR();
+    patch(ADD, () => {});
+  } else {
+    patch(ADD, () => {});
+    installVR();
+  }
+  return { dialog: new ADD(), actor, messages, nativeWrites: () => nativeWrites };
+}
+for (const order of ['VR first', 'Armour first']) {
+  test(`layered DR then VR and HP, audit retained: ${order}`, async () => {
+    const { dialog, actor, messages, nativeWrites } = combined(order);
+    await dialog.getData();
+    assert.equal(dialog._calculator.effectiveDR, 6);
+    assert.equal(dialog._calculator.pointsToApply, 6);
+    assert.equal(dialog._calculator._calculators[0].calculatedShock, 3);
+    await dialog.resolveInjury(true, 6, true, '<p>Final injury 6</p>');
+    assert.equal(actor.system.HP.value, 9);
+    assert.equal(actor.system.additionalresources.tracker['0000'].value, 0);
+    assert.equal(nativeWrites(), 0);
+    assert.match(messages[0].content, /effective DR 6/);
+    assert.match(messages[0].content, /VR −3/);
+  });
+  test(`unresolved armour prevents VR and HP writes: ${order}`, async () => {
+    const { dialog, actor } = combined(order, { invalid: true });
+    await dialog.getData();
+    await assert.rejects(
+      dialog.resolveInjury(true, 12, true, '<p>injury</p>'),
+      /specific hit location/,
+    );
+    assert.equal(actor.system.HP.value, 12);
+    assert.equal(actor.system.additionalresources.tracker['0000'].value, 3);
+  });
+}

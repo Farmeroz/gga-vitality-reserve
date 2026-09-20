@@ -126,9 +126,39 @@ export function installUI() {
         onclick: () => open(sheet.actor).catch(report),
       });
   });
-  Hooks.on('chatMessage', (_log, text) => {
-    if (!/^\/vr(?:\s|$)/i.test(text)) return;
-    open().catch(report);
+  registerCommand();
+}
+
+export function registerCommand(
+  registry = globalThis.GURPS?.ChatProcessors,
+  openWindow = open,
+  onError = report,
+) {
+  if (typeof registry?.registerProcessor !== 'function') {
+    onError(
+      new Error('GGA chat integration is unavailable. Use the VR sheet button or module API.'),
+    );
     return false;
+  }
+  const existing = [...registry.processorsForAll(), ...registry.processorsForGMOnly()];
+  if (existing.some((p) => p.matches('/vr'))) {
+    onError(new Error('/vr is already registered. Use the VR sheet button or module API.'));
+    return false;
+  }
+  registry.registerProcessor({
+    registry: null,
+    matches: (line) => /^\/vr(?:\s|$)/i.test(String(line).trim()),
+    usagematches: () => false,
+    help: () => '/vr – open Vitality Reserve',
+    isGMOnly: () => false,
+    async process() {
+      try {
+        await openWindow();
+      } catch (error) {
+        onError(error);
+      }
+      return true;
+    },
   });
+  return true;
 }
