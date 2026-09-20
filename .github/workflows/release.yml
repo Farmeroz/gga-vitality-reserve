@@ -1,0 +1,51 @@
+name: Publish release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-release
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    uses: ./.github/workflows/checks.yml
+
+  release:
+    if: github.ref == 'refs/heads/main'
+    needs: checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download verified package
+        uses: actions/download-artifact@v4
+        with:
+          name: foundry-package
+          path: dist/
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          release_tag="v$(node -p 'require("./dist/module.json").version')"
+          title=$(node -p '`${require("./dist/module.json").title} ${require("./dist/module.json").version}`')
+          if gh release view "$release_tag" >/dev/null 2>&1; then
+            echo "Release $release_tag already exists; nothing to publish."
+            exit 0
+          fi
+          gh release create "$release_tag" dist/* \
+            --target "$GITHUB_SHA" \
+            --title "$title" \
+            --generate-notes

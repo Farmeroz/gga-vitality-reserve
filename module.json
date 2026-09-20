@@ -1,0 +1,19 @@
+{
+  "id": "gga-vitality-reserve",
+  "title": "GGA Vitality Reserve",
+  "description": "Vitality Reserve for GURPS 4e: tracker setup, VR-first injury, configurable healing, and GGA damage-effect integration.",
+  "version": "0.1.3",
+  "authors": [{ "name": "Phil Brown", "url": "https://github.com/Farmeroz" }],
+  "compatibility": { "minimum": "14" },
+  "relationships": {
+    "systems": [{ "id": "gurps", "type": "system", "compatibility": { "minimum": "0.18.23" } }],
+    "requires": [{ "id": "lib-wrapper", "type": "module" }]
+  },
+  "esmodules": ["scripts/main.mjs"],
+  "styles": ["styles/vr.css"],
+  "url": "https://github.com/Farmeroz/gga-vitality-reserve",
+  "manifest": "https://github.com/Farmeroz/gga-vitality-reserve/releases/latest/download/module.json",
+  "download": "https://github.com/Farmeroz/gga-vitality-reserve/releases/download/v0.1.3/gga-vitality-reserve-v0.1.3.zip",
+  "readme": "README.md",
+  "license": "LICENSE"
+}
