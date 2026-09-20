@@ -25,7 +25,18 @@ export function renderResult(actor, result, label = '', audit = '') {
   if (result.kind === 'unlink')
     return `<p><strong>${esc(actor.name)}:</strong> VR automation unlinked; tracker values retained.</p>`;
   const delta = (n) => `${n >= 0 ? '+' : '−'}${Math.abs(n)}`;
-  return `<div class="gvr-result"><strong>${esc(actor.name)} · ${esc(label || { damage: 'Injury', heal: 'Healing', recover: 'VR recovery', spend: 'VR expenditure' }[result.kind])}</strong><p>${result.amount} points: HP ${delta(result.hpChange)}, VR ${delta(result.vrChange)}.</p><p>HP ${result.before.hp} → ${result.after.hp}; VR ${result.before.vr} → ${result.after.vr}.${result.unused ? ` Unused: ${result.unused}.` : ''}</p>${audit ? `<details><summary>Damage calculation and armour review</summary><pre style="white-space:pre-wrap">${esc(String(audit).slice(0, 20000))}</pre></details>` : ''}</div>`;
+  return `<div class="gvr-result"><strong>${esc(actor.name)} · ${esc(label || { damage: 'Injury', heal: 'Healing', recover: 'VR recovery', spend: 'VR expenditure' }[result.kind])}</strong><p>${result.amount} points: HP ${delta(result.hpChange)}, VR ${delta(result.vrChange)}.</p><p>HP ${result.before.hp} → ${result.after.hp}; VR ${result.before.vr} → ${result.after.vr}.${result.unused ? ` Unused: ${result.unused}.` : ''}</p>${
+    audit
+      ? `<details><summary>Damage calculation and armour review</summary><div class="gvr-audit">${String(
+          audit,
+        )
+          .slice(0, 20000)
+          .split(/\n/)
+          .filter((line) => line.trim())
+          .map((line) => `<p>${esc(line.trim())}</p>`)
+          .join('')}</div></details>`
+      : ''
+  }</div>`;
 }
 export async function perform(actor, request, user) {
   own(actor, user);

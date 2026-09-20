@@ -6,7 +6,7 @@ For GURPS Fourth Edition and GGA. Rules reference: **Pyramid #3/75, p. 20**.
 
 Click **VR** in the character-sheet header. Alternatively, select one token and type **/vr**. With no token selected, the command uses your assigned character. If you have selected an unlinked token, its reserve belongs to that token, not the original actor in the directory.
 
-Choose an existing tracker or create **Vitality Reserve**. The module suggests a maximum when it finds one unambiguous advantage with a level, such as “Vitality Reserve 5”. It does not infer the level from character-point cost. Review both **Maximum VR** and **Current VR**, then save. Later changes to the advantage do not silently resize or refill the tracker; reopen setup to update it.
+Choose an existing tracker or create **Vitality Reserve**. The module suggests a maximum when it finds one unambiguous advantage with a level, such as “Vitality Reserve 5” or “Vitality Reserve (5)”. It does not infer the level from character-point cost. Review both **Maximum VR** and **Current VR**, then save. Later changes to the advantage do not silently resize or refill the tracker; reopen setup to update it.
 
 Reopening setup preserves current points. A change to maximum VR does not refill spent points. Trackers are identified by a marker that survives ordinary slot reordering; importing a character sheet may replace trackers, in which case link the tracker again.
 
@@ -16,9 +16,9 @@ Use GGA's normal **Apply Damage Dialogue**, including the dialogue opened by GUR
 
 For example, **HP 10/12, VR 5/5** taking **8 injury** becomes **HP 7/12, VR 0/5**. Only the 3 HP injury contributes to shock and other injury consequences. VR does not absorb physical knockback.
 
-**Bypass VR for this dialogue** sends all injury to HP. For a direct HP cost or already-calculated injury, `/vr` also offers **Apply injury / HP expenditure**. That control does not calculate DR or produce hit-location effects.
+**Bypass VR** sends all injury to HP. For a direct HP cost or already-calculated injury, `/vr` also offers **Apply injury / HP expenditure**. That control does not calculate DR or produce hit-location effects.
 
-The ADD's ordinary calculation table continues to show injury before VR. Its effects advice is adjusted for VR. Chat records the resulting split. A retained dialogue shows the effects of applying another hit with the points currently remaining; it is not a history of the hit just applied.
+The ADD shows the ordinary injury calculation, followed by **VR absorbed** and **HP injury**. The final application field shows the split, such as **2 HP + 4 VR**. Its effects advice is adjusted for VR. Chat records the resulting split. A retained dialogue shows the effects of applying another hit with the points currently remaining; it is not a history of the hit just applied.
 
 ## Heal
 

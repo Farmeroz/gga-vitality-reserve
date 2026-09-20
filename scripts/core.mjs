@@ -116,8 +116,9 @@ export function detectLevels(actor) {
       const name = String(a.name ?? '').trim();
       if (/^vitality reserve\b/i.test(name)) {
         const explicit = a.levels ?? a.level;
-        const match = name.match(/^vitality reserve\s+(\d+)\b/i);
-        const raw = explicit !== undefined && explicit !== '' ? explicit : match?.[1];
+        const match = name.match(/^vitality reserve\s*(?:\(\s*(\d+)\s*\)|\s+(\d+)\b)/i);
+        const raw =
+          explicit !== undefined && explicit !== '' ? explicit : (match?.[1] ?? match?.[2]);
         const level = Number(raw);
         found.push({
           name,

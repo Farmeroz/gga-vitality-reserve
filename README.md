@@ -62,3 +62,7 @@ GURPS is a trademark of Steve Jackson Games. This unofficial software does not r
 ## Version 0.1.1
 
 Registers `/vr` with GGA’s command processor, including Foundry v14 formatted chat input and OtF commands. When using Layered Armour, install version 0.2.3 or later as well; that update moves its ADD methods to libWrapper and keeps armour review ahead of VR routing in either load order. Armour calculation details are retained in the VR chat result.
+
+## Version 0.1.2
+
+Detects parenthesised levels such as “Vitality Reserve (4)”. VR controls now live inside the ADD’s results area, with explicit VR absorbed and HP injury rows and a split application field. Repeated rendering does not duplicate the controls. Chat calculation details use compact, normal-font rows.

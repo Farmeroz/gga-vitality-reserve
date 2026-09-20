@@ -352,3 +352,11 @@ for (const order of ['VR first', 'Armour first']) {
     assert.equal(actor.system.additionalresources.tracker['0000'].value, 3);
   });
 }
+
+test('25 HP screenshot scenario gives shock 1 for 2 HP injury after VR', () => {
+  const {
+    children: [c],
+  } = make([6], 4, { HP: { max: 25 } });
+  assert.equal(c.calculatedShock, 1);
+  assert.equal(c.effects.find((e) => e.type === 'shock').amount, 1);
+});
