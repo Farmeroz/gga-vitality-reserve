@@ -16,7 +16,7 @@ Use GGA's normal **Apply Damage Dialogue**, including the dialogue opened by GUR
 
 For example, **HP 10/12, VR 5/5** taking **8 injury** becomes **HP 7/12, VR 0/5**. Only the 3 HP injury contributes to shock and other injury consequences. VR does not absorb physical knockback.
 
-**Bypass VR** sends all injury to HP. For a direct HP cost or already-calculated injury, `/vr` also offers **Apply injury / HP expenditure**. That control does not calculate DR or produce hit-location effects.
+**Bypass VR (apply injury to HP)** sits beneath the damage entry at the top of ADD and sends all injury to HP. It applies to both direct and calculated injury. For a direct HP cost or already-calculated injury, `/vr` also offers **Apply injury / HP expenditure**. That control does not calculate DR or produce hit-location effects.
 
 The ADD shows the ordinary injury calculation, followed by **VR absorbed** and **HP injury**. The final application field shows the split, such as **2 HP + 4 VR**. Its effects advice is adjusted for VR. Chat records the resulting split. A retained dialogue shows the effects of applying another hit with the points currently remaining; it is not a history of the hit just applied.
 

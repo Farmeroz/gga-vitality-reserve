@@ -6,7 +6,7 @@ import { detectLevels } from '../scripts/core.mjs';
 import { renderResult } from '../scripts/service.mjs';
 function fixture(simple = false) {
   const { document } = parseHTML(
-    `<html><body><section class="app"><header>Manual Damage</header><div class="window-content"><div class="gga-app">${simple ? '<div><select id="apply-to"></select></div>' : '<div class="results-table gurps-3col"><div>Injury</div><div>6</div><div>6 × 1</div></div><div class="apply-results"><div><input id="result-apply-injury" disabled value="6"></div></div>'}</div></div></section></body></html>`,
+    `<html><body><section class="app"><header>Manual Damage</header><div class="window-content"><div class="gga-app"><div class="apply-damage-column"><div class="damage-entry"><input id="basicDamage" value="6"><div><select id="apply-to"></select></div></div></div>${simple ? '' : '<div class="results-table gurps-3col"><div>Injury</div><div>6</div><div>6 × 1</div></div><div class="apply-results"><div><input id="result-apply-injury" disabled value="6"></div></div>'}</div></div></section></body></html>`,
   );
   globalThis.document = document;
   globalThis.game = {
@@ -50,6 +50,8 @@ test('VR lives inside application content, never above window header', () => {
   assert.equal(root.firstElementChild.tagName, 'HEADER');
   assert.equal(root.querySelectorAll('.gvr-controls').length, 1);
   assert.ok(root.querySelector('.apply-results .gvr-controls'));
+  assert.ok(root.querySelector('.apply-damage-column > .gvr-bypass'));
+  assert.equal(root.querySelector('.apply-results input[type=checkbox]'), null);
   assert.equal(root.querySelector('.gvr-add-panel'), null);
 });
 test('rerender cannot duplicate controls or result rows', () => {
@@ -58,6 +60,7 @@ test('rerender cannot duplicate controls or result rows', () => {
   enhanceDialog(dialog, root.querySelector('.window-content'));
   assert.equal(root.querySelectorAll('.gvr-controls').length, 1);
   assert.equal(root.querySelectorAll('.gvr-result-cell').length, 6);
+  assert.equal(root.querySelectorAll('.gvr-bypass').length, 1);
 });
 test('final application field and calculation rows show 2 HP plus 4 VR; arithmetic stays 6', () => {
   const { root, dialog } = fixture();

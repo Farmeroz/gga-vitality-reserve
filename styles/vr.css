@@ -11,13 +11,15 @@
   background: none;
   margin: 0.2em 0;
 }
-.gvr-controls label {
+.gvr-bypass {
   display: inline-flex;
   align-items: center;
   gap: 0.25em;
-  white-space: nowrap;
+  margin: 0.3em 0;
+  font: inherit;
+  color: inherit;
 }
-.gvr-controls input[type='checkbox'] {
+.gvr-bypass input[type='checkbox'] {
   width: 14px;
   height: 14px;
   margin: 0;

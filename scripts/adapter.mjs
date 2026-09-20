@@ -50,7 +50,7 @@ export function enhanceDialog(dialog, html) {
   // Render hooks can run for both the concrete class and its base classes.
   // Remove only our nodes and always mount INSIDE GGA's content, never the frame.
   root
-    .querySelectorAll('.gvr-add-panel, .gvr-controls, .gvr-result-cell')
+    .querySelectorAll('.gvr-add-panel, .gvr-controls, .gvr-bypass, .gvr-result-cell')
     .forEach((node) => node.remove());
   const calc = dialog._calculator;
   const input = root.querySelector('#result-apply-injury');
@@ -66,7 +66,16 @@ export function enhanceDialog(dialog, html) {
   const doc = content.ownerDocument;
   const controls = doc.createElement('div');
   controls.className = 'gvr-controls';
-  controls.innerHTML = `<span>VR <strong>${vr.value}/${vr.max}</strong> · HP ${esc(dialog.actor.system.HP.value)}/${esc(dialog.actor.system.HP.max)}</span><label title="Apply injury to HP without spending VR"><input type="checkbox" ${dialog._gvrBypass ? 'checked' : ''}> Bypass VR</label>`;
+  controls.innerHTML = `<span>VR <strong>${vr.value}/${vr.max}</strong> · HP ${esc(dialog.actor.system.HP.value)}/${esc(dialog.actor.system.HP.max)}</span>`;
+  const bypass = doc.createElement('label');
+  bypass.className = 'gvr-bypass';
+  bypass.title = 'Apply injury to HP without spending VR. Applies to direct and calculated injury.';
+  bypass.innerHTML = `<input type="checkbox" ${dialog._gvrBypass ? 'checked' : ''}> Bypass VR (apply injury to HP)`;
+  const direct = content.querySelector('#apply-to');
+  const damageRow = content.querySelector('#basicDamage')?.parentElement;
+  if (damageRow) damageRow.insertAdjacentElement('afterend', bypass);
+  else if (direct?.parentElement) direct.parentElement.append(bypass);
+  else controls.append(bypass);
   const apply = content.querySelector('.apply-results');
   if (input && apply) {
     input.value = `${hpLoss} HP + ${spent} VR`;
@@ -98,7 +107,7 @@ export function enhanceDialog(dialog, html) {
         table.append(cell);
       }
   }
-  controls.querySelector('input').addEventListener('change', (event) => {
+  bypass.querySelector('input').addEventListener('change', (event) => {
     dialog._gvrBypass = event.target.checked;
     dialog.render(false);
   });
