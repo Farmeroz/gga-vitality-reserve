@@ -1,5 +1,11 @@
 # GGA Vitality Reserve
 
+## Release 0.1.5
+
+Package files inside a `gga-vitality-reserve/` folder matching the module ID. This avoids a versioned installation folder when manually extracting the release ZIP. The build verifies the archive paths, embedded manifest ID, and file contents. No GURPS 4e rules or runtime behaviour changes.
+
+For manual installation, place that folder directly under Foundry's `Data/modules/` directory. The correct manifest path is `Data/modules/gga-vitality-reserve/module.json`.
+
 ## Release 0.1.4
 
 Declare verified Foundry VTT 14 compatibility, reflecting maintainer live testing. No runtime or GURPS 4e rules changes.

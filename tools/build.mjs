@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import { readFile, mkdir, writeFile, readdir } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { zipSync, unzipSync } from 'fflate';
@@ -14,12 +15,18 @@ const files = [
   ...(await readdir('styles')).map((f) => `styles/${f}`),
 ];
 const entries = {};
-for (const path of files) entries[path] = new Uint8Array(await readFile(path));
+for (const path of files)
+  entries[`${manifest.id}/${path}`] = new Uint8Array(await readFile(path));
 const zipped = zipSync(entries, { level: 9 });
 const restored = unzipSync(zipped);
-for (const file of files)
-  if (!Buffer.from(restored[file]).equals(Buffer.from(entries[file])))
-    throw Error(`ZIP verification failed: ${file}`);
+assert.deepEqual(Object.keys(restored).sort(), Object.keys(entries).sort());
+assert.ok(Object.keys(restored).every((path) => path.startsWith(`${manifest.id}/`)));
+assert.equal(
+  JSON.parse(Buffer.from(restored[`${manifest.id}/module.json`]).toString()).id,
+  manifest.id,
+);
+for (const [path, bytes] of Object.entries(entries))
+  assert.deepEqual(Buffer.from(restored[path]), Buffer.from(bytes), path);
 await mkdir('dist', { recursive: true });
 const name = `${manifest.id}-v${manifest.version}.zip`;
 await writeFile(`dist/${name}`, zipped);
