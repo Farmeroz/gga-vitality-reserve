@@ -1,5 +1,9 @@
 # GGA Vitality Reserve
 
+## Release 0.1.4
+
+Declare verified Foundry VTT 14 compatibility, reflecting maintainer live testing. No runtime or GURPS 4e rules changes.
+
 Vitality Reserve for **GURPS Fourth Edition**, based on _Pyramid #3/75_, p. 20. VR absorbs supported HP injury before HP is lost. Healing has three GM-selectable policies: HP first then VR, VR first then HP, or HP only.
 
 Requires Foundry VTT 14+, GURPS Game Aid 0.18.23 (the adapter supports the 0.18.x API), and libWrapper. GGA's native Apply Damage Dialogue and GURPS Manual Damage use the same integration. No upper Foundry version is imposed; compatibility with future major releases is not implied.
