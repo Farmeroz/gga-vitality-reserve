@@ -15,8 +15,9 @@ const files = [
   ...(await readdir('styles')).map((f) => `styles/${f}`),
 ];
 const entries = {};
-for (const path of files)
+for (const path of files) {
   entries[`${manifest.id}/${path}`] = new Uint8Array(await readFile(path));
+}
 const zipped = zipSync(entries, { level: 9 });
 const restored = unzipSync(zipped);
 assert.deepEqual(Object.keys(restored).sort(), Object.keys(entries).sort());
@@ -25,8 +26,9 @@ assert.equal(
   JSON.parse(Buffer.from(restored[`${manifest.id}/module.json`]).toString()).id,
   manifest.id,
 );
-for (const [path, bytes] of Object.entries(entries))
+for (const [path, bytes] of Object.entries(entries)) {
   assert.deepEqual(Buffer.from(restored[path]), Buffer.from(bytes), path);
+}
 await mkdir('dist', { recursive: true });
 const name = `${manifest.id}-v${manifest.version}.zip`;
 await writeFile(`dist/${name}`, zipped);
